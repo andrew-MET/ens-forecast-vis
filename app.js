@@ -7,17 +7,23 @@ const getParamInfo = (param) => {
         temp: {
             name: "T2m",
             units: "&#8451",
-            colours: [d3.interpolateBlues(0.8), d3.interpolateBlues(0.5), d3.interpolateBlues(0.2)]
+            colours: [d3.interpolateBlues(0.8), d3.interpolateBlues(0.5), d3.interpolateBlues(0.2)],
+            binSize: 1.0,
+            fixedBinSize: false
         },
         windspeed: {
             name: "S10m",
             units: "m/s",
-            colours: [d3.interpolatePurples(0.8), d3.interpolatePurples(0.5), d3.interpolatePurples(0.2)]
+            colours: [d3.interpolatePurples(0.8), d3.interpolatePurples(0.5), d3.interpolatePurples(0.2)],
+            binSize: 1.0,
+            fixedBinSize: false
         },
         winddir: {
             name: "D10m",
             units: "&deg",
-            colours: [d3.interpolateOranges(0.8), d3.interpolateOranges(0.5), d3.interpolateOranges(0.2)]
+            colours: [d3.interpolateOranges(0.8), d3.interpolateOranges(0.5), d3.interpolateOranges(0.2)],
+            binSize: 10.0,
+            fixedBinSize: false
         },
         precip: {
             name: "Pcp",
@@ -26,12 +32,16 @@ const getParamInfo = (param) => {
         cloud: {
             name: "CAF",
             units: "%",
-            colours: [d3.interpolateGreys(0.8), d3.interpolateGreys(0.5), d3.interpolateGreys(0.2)]
+            colours: [d3.interpolateGreys(0.8), d3.interpolateGreys(0.5), d3.interpolateGreys(0.2)],
+            binSize: 10.0,
+            fixedBinSize: true
         },
         hum: {
             name: "RH2m",
             units: "%",
-            colours: [d3.interpolatePuBuGn(0.8), d3.interpolatePuBuGn(0.5), d3.interpolatePuBuGn(0.2)]
+            colours: [d3.interpolatePuBuGn(0.8), d3.interpolatePuBuGn(0.5), d3.interpolatePuBuGn(0.2)],
+            binSize: 5.0,
+            fixedBinSize: false
         }
     }
     return(params[param])
@@ -74,14 +84,6 @@ const plumeChart = (divID, data, param, thresh) => {
 
     const currentParam = getParamInfo(param);
 
-    let binSize = 1;
-    let forceBinSize = false;
-
-    if (param === "cloud") {
-        binSize = 10;
-        forceBinSize = true;
-    }
-
     new plume(svg)
         .data(data)
         .size(width, height)
@@ -92,16 +94,16 @@ const plumeChart = (divID, data, param, thresh) => {
         .bg("#FFF")
         .textColour("#999")
         .threshold(thresh)
-        .binSize(binSize)
-        .forceBinSize(forceBinSize)
+        .binSize(currentParam.binSize)
+        .forceBinSize(currentParam.fixedBinSize)
         .render()
 
     const cont = document.getElementById(divID);
     cont.appendChild(svg.node());
 }
 
-// Function to create inputs
-const makeInputs = async (dataIn) => {
+// Function to refersh charts and sliders (creates on first call)
+const refreshApp = async (dataIn) => {
     const data = await dataIn;
 
     // station selector
@@ -145,14 +147,12 @@ const makeInputs = async (dataIn) => {
 
 const data = getData();
 
-makeInputs(data);
+refreshApp(data);
 
 const makeThreshSlider = (data, param) => {
-    let threshRange = d3.extent(data, d => d[getParamInfo(param).name]);
-    let n = 1.0;
-    if (param === "cloud") {
-        n = 10.0;
-    }
+    const currentParam = getParamInfo(param)
+    const threshRange = d3.extent(data, d => d[currentParam.name]);
+    const n = currentParam.binSize;
     const slider = document.createElement("input");
     slider.setAttribute("type", "range");
     slider.setAttribute("id", param + "-threshold");
@@ -172,10 +172,7 @@ const makeThreshSlider = (data, param) => {
 const updateThreshSlider = (data, param) => {
     const currentParam = getParamInfo(param)
     const threshRange = d3.extent(data, d => d[currentParam.name]);
-    let n = 1.0;
-    if (param === "cloud") {
-        n = 10.0;
-    }
+    const n = currentParam.binSize;
     const slider = document.getElementById(param + "-threshold")
     slider.setAttribute("min", n * Math.floor(threshRange[0] / n));
     slider.setAttribute("max", n * Math.ceil(threshRange[1] / n));
