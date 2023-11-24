@@ -1,6 +1,7 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import { plume } from "./plume.js"
 import { stackedProb } from "./stackedProb.js"
+import { radialBands } from "./radialBands.js"
 
 // Set up parameter information
 const getParamInfo = (param) => {
@@ -27,7 +28,7 @@ const getParamInfo = (param) => {
             colours: [d3.interpolateOranges(0.8), d3.interpolateOranges(0.5), d3.interpolateOranges(0.2)],
             binSize: 10.0,
             fixedBinSize: false,
-            type: "plume"
+            type: "radialBands"
         },
         precip: {
             name: "Pcp",
@@ -71,7 +72,7 @@ const getData = async () => {
 // Set up chart dimensions
 
 const width = 800;
-const height = 100;
+const height = 400;
 const margin = {
     top: 15,
     right: 40,
@@ -147,6 +148,40 @@ const stackChart = (divID, data, param, thresh) => {
  
 }
 
+// Function to set up a radial bands plot
+const radialBandChart = (divID, data, param, thresh) => {
+
+    let svg = d3.select("#" + param);
+
+    if (svg.empty()) {
+        svg = d3.create("svg")
+            .attr("id", param)
+            //.attr("viewBox", [0, 0, width, height])
+            .attr("width", width)
+            .attr("height", height)
+            .attr("font-family", "sans-serif");
+    }
+
+    const currentParam = getParamInfo(param);
+
+    new radialBands(svg)
+        .data(data)
+        .size(width, height)
+        .paramKey(currentParam.name)
+        .paramUnit(currentParam.units)
+        .margins(margin.top, margin.right, margin.bottom, margin.left)
+        //.colours(...currentParam.colours)
+        .bg("#FFF")
+        .textColour("#999")
+        .threshold(thresh)
+        .binSize(currentParam.binSize)
+        .forceBinSize(currentParam.fixedBinSize)
+        .render()
+
+    d3.select("#" + divID).append(() => svg.node())
+ 
+}
+
 
 // Function to refersh charts and sliders (creates on first call)
 const refreshApp = async (dataIn) => {
@@ -194,7 +229,6 @@ refreshApp(data);
 
 const filterToLocation = data => {
     const loc = document.getElementById("choose-station").value
-    console.log(data)
     return data.filter(d => d.name === loc)
 }
 
@@ -217,6 +251,27 @@ const makeThreshSlider = (data, param) => {
     const threshContainer = document.getElementById("thresholds-" + param);
     threshContainer.appendChild(sliderLabel);
     threshContainer.appendChild(slider);   
+
+    if (param === "winddir") {
+        const dropdown = document.createElement("select");
+        dropdown.setAttribute("id", "choose-time")
+        dropdown.addEventListener("change", (event) => {
+            drawChart(data, param);
+        });
+        const times = [...new Set(data.map(d => d.valid_dttm))].sort();
+        for (let i = 0; i < times.length; i++) {
+            let opt = document.createElement("option");
+            opt.text = times[i];
+            opt.value = times[i];
+            dropdown.options.add(opt);
+        }
+        dropdown.selectedIndex = 0;
+        const dropdownLabel = document.createElement("label");
+        dropdownLabel.setAttribute("for", "choose-time")
+        dropdownLabel.innerHTML = "<strong>    Time: </strong>"; 
+        threshContainer.appendChild(dropdownLabel);
+        threshContainer.appendChild(dropdown);          
+    }
 }
 
 const updateThreshSlider = (dataIn, param) => {
@@ -232,7 +287,14 @@ const updateThreshSlider = (dataIn, param) => {
 
 const drawChart = (dataIn, param) => {
 
-    const data = filterToLocation(dataIn);
+    let data = filterToLocation(dataIn);
+
+    // If wind direction, get the time
+    if (param === "winddir") {
+        const time = document.getElementById("choose-time").value;
+        data = data.filter(d => d.valid_dttm === time);
+    }
+
 
     // Get threshold from slider
     const slider = document.getElementById(param + "-threshold")
@@ -244,6 +306,7 @@ const drawChart = (dataIn, param) => {
         ? plumeChart(param + "Container", data, param, thresh)
         : currentParam.type === "stackedProb"
             ? stackChart(param + "Container", data, param, thresh)
-            : plumeChart(param + "Container", data, param, thresh)
+            : radialBandChart(param + "Container", data, param, thresh)
 }
+
 
