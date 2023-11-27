@@ -137,7 +137,8 @@ export class radialBands {
   }
 
   render() {
-    this._drawBands();
+    const intervalId = this._drawBands();
+    this.intervalId = intervalId;
     return this;
   }
 
@@ -150,10 +151,10 @@ export class radialBands {
         d[this._paramKey] >= 0 && d[this._paramKey] < 90
           ? 1
           : d[this._paramKey] >= 90 && d[this._paramKey] < 180
-          ? 2
-          : d[this._paramKey] >= 180 && d[this._paramKey] < 270
-          ? 3
-          : 4
+            ? 2
+            : d[this._paramKey] >= 180 && d[this._paramKey] < 270
+              ? 3
+              : 4
     }));
     const range = (data, key) => {
       const extent = d3.extent(data.map((d) => d[key]));
@@ -175,8 +176,8 @@ export class radialBands {
     } else if (d3.intersection(quadrants, [2, 4]).size === 2) {
       range(data) > 180
         ? (data = data.map((d) =>
-            d.quadrant === 4 ? { ...d, offset: -360 } : { ...d, offset: 0 }
-          ))
+          d.quadrant === 4 ? { ...d, offset: -360 } : { ...d, offset: 0 }
+        ))
         : (data = data.map((d) => ({ ...d, offset: 0 })));
     } else {
       data = data.map((d) => ({ ...d, offset: 0 }));
@@ -296,6 +297,7 @@ export class radialBands {
   }
 
   _drawBands() {
+
     this._parent.style("background-color", `${this._bg}`);
 
     const selectOrAppend = (elementType, className, parent) => {
@@ -331,16 +333,16 @@ export class radialBands {
       .x((d) => x(d.time))
       .y((d) => d.y);
 
-      const chartWidth = this._width - this._margins.left - this._margins.right;
-      const chartHeight = this._height - this._margins.bottom - this._margins.top;
-      const bounds = selectOrAppend("g", "bounds", this._parent).attr(
+    const chartWidth = this._width - this._margins.left - this._margins.right;
+    const chartHeight = this._height - this._margins.bottom - this._margins.top;
+    const bounds = selectOrAppend("g", "bounds", this._parent).attr(
       "transform",
-      `translate(${this._margins.left + chartWidth / 2 },${this._margins.top + chartHeight / 2})`
+      `translate(${this._margins.left + chartWidth / 2},${this._margins.top + chartHeight / 2})`
     );
 
     const bandData = this._toBands();
     const radius = Math.min(chartHeight / 2, chartWidth / 2) - d3.max(Object.values(this._bandWidths)) / 2;
-    
+
     const outline = selectOrAppend("g", "outline", bounds)
       .selectAll("path")
       .data([{ a1: 0, a2: 2 * Math.PI, ir: radius - 1, or: radius + 1 }])
@@ -357,77 +359,77 @@ export class radialBands {
       .attr("fill", "none");
 
     const directionsData = [
-        [0, [{x: 0, y: 0}, {x: 0, y: (radius - 1)}]],
+      [0, [{ x: 0, y: 0 }, { x: 0, y: (radius - 1) }]],
+      [
+        45,
         [
-            45, 
-            [
-                {x: 0, y: 0},
-                {
-                    x: Math.sin(45 * Math.PI / 180) * (radius - 1), 
-                    y: Math.cos(45 * Math.PI / 180) * radius
-                }
-            ]
-        ],
-        [90, [{x: 0, y: 0}, {x: radius, y: 0}]],
-        [
-            135, 
-            [
-                {x: 0, y: 0},
-                {
-                    x: Math.sin(135 * Math.PI / 180) * (radius - 1), 
-                    y: Math.cos(135 * Math.PI / 180) * (radius - 1)
-                }
-            ]
-        ],
-        [180, [{x: 0, y: 0}, {x: 0, y: -(radius - 1)}]],
-        [
-            225, 
-            [
-                {x: 0, y: 0},
-                {
-                    x: Math.sin(225 * Math.PI / 180) * (radius - 1), 
-                    y: Math.cos(225 * Math.PI / 180) * (radius - 1)
-                }
-            ]
-        ],
-        [270, [{x: 0, y: 0}, {x: -(radius - 1), y: 0}]],
-        [
-            315, 
-            [
-                {x: 0, y: 0},
-                {
-                    x: Math.sin(315 * Math.PI / 180) * (radius - 1), 
-                    y: Math.cos(315 * Math.PI / 180) * (radius - 1)
-                }
-            ]
+          { x: 0, y: 0 },
+          {
+            x: Math.sin(45 * Math.PI / 180) * (radius - 1),
+            y: Math.cos(45 * Math.PI / 180) * radius
+          }
         ]
+      ],
+      [90, [{ x: 0, y: 0 }, { x: radius, y: 0 }]],
+      [
+        135,
+        [
+          { x: 0, y: 0 },
+          {
+            x: Math.sin(135 * Math.PI / 180) * (radius - 1),
+            y: Math.cos(135 * Math.PI / 180) * (radius - 1)
+          }
+        ]
+      ],
+      [180, [{ x: 0, y: 0 }, { x: 0, y: -(radius - 1) }]],
+      [
+        225,
+        [
+          { x: 0, y: 0 },
+          {
+            x: Math.sin(225 * Math.PI / 180) * (radius - 1),
+            y: Math.cos(225 * Math.PI / 180) * (radius - 1)
+          }
+        ]
+      ],
+      [270, [{ x: 0, y: 0 }, { x: -(radius - 1), y: 0 }]],
+      [
+        315,
+        [
+          { x: 0, y: 0 },
+          {
+            x: Math.sin(315 * Math.PI / 180) * (radius - 1),
+            y: Math.cos(315 * Math.PI / 180) * (radius - 1)
+          }
+        ]
+      ]
     ]
 
     const lineGenerator = d3.line().x(d => d.x).y(d => d.y)
 
     const directionsLines = selectOrAppend("g", "directionsLines", bounds)
-        .selectAll("path")
-        .data(directionsData)
-        .join("path")
-        .attr("d", d => lineGenerator(d[1]))
-        .attr("stroke", this._textColour)
-        .attr("stroke-dasharray", "4")
-        .attr("fill", "none")
+      .selectAll("path")
+      .data(directionsData)
+      .join("path")
+      .attr("d", d => lineGenerator(d[1]))
+      .attr("stroke", this._textColour)
+      .attr("stroke-dasharray", "4")
+      .attr("fill", "none")
 
 
 
     const needlePath = [
-        {x: radius * 0.05, y: radius * 0.1 },
-        {x: radius * 0.05, y: -radius * 0.9 },
-        {x: radius * 0.075, y: -radius * 0.85 },
-        {x: 0, y: -radius },
-        {x: -radius * 0.075, y: -radius * 0.85 },
-        {x: -radius * 0.05, y: -radius * 0.9 },
-        {x: -radius * 0.05, y: radius * 0.1 },
-        {x: -radius * 0.075, y: radius * 0.15 },
-        {x: 0, y: radius * 0.1 },
-        {x: radius * 0.075, y: radius * 0.15 },
-        {x: radius * 0.05, y: radius * 0.1 }
+      { x: radius * 0.05, y: radius * 0.1 },
+      { x: radius * 0.05, y: -radius * 0.9 },
+      { x: radius * 0.075, y: -radius * 0.85 },
+      { x: 0, y: -radius },
+      { x: -radius * 0.075, y: -radius * 0.85 },
+      { x: -radius * 0.05, y: -radius * 0.9 },
+      { x: -radius * 0.05, y: radius * 0.1 },
+      { x: -radius * 0.075, y: radius * 0.15 },
+      { x: 0, y: radius * 0.1 },
+      { x: radius * 0.075, y: radius * 0.15 },
+      { x: radius * 0.05, y: radius * 0.1 }
     ]
 
     const bands = selectOrAppend("g", "bands", bounds)
@@ -444,30 +446,37 @@ export class radialBands {
       )
       .attr("fill", (d) => this._bandColours[d.range]);
 
-    const needle = selectOrAppend("g", "needle", bounds)
-      .selectAll("path")
-      .data([this._data[this._data.length - 1]])
-      .join("path")
-      .attr("d", lineGenerator(needlePath))
-      .attr(
-        "transform", 
-        d => `rotate(${d[this._paramKey]})`
-      )
-      .attr("stroke", this._textColour)
-      .attr("fill", "none");
+    const drawNeedle = (angle1, angle2) => {
+      const needle = selectOrAppend("g", "needle", bounds)
+      needle.transition()
+      needle
+        .selectAll(".movingNeedle")
+        .remove()
+      needle
+        .append("path")
+        .attr("class", "movingNeedle")
+        .datum(needlePath)
+        .attr("d", lineGenerator)
+        .attr("transform", `rotate(${angle1})`)
+        .attr("stroke", this._textColour)
+        .attr("fill", "none")
+        .transition()
+        .delay(500)
+        .duration(250)
+        .attr("transform", `rotate(${angle2})`)
+    }
 
-    //Animate the needle
-    setInterval(() => {
-        for (let i = 0; i < this._data.length; i ++){
-            let angle = this._data[i][this._paramKey]
-            needle
-                .transition()
-                .delay(i * 200)   
-                .duration(200)
-                .attr("transform", `rotate(${angle})`)
-        }
-    }, 200 * this._data.length)
+    let counter = 0;
+    let i = 0
+    const intervalId = setInterval(() => {
+      let first = counter;
+      counter++;
+      if (counter > (this._data.length - 1)) counter = 0;
+      const second = counter;
+      drawNeedle(this._data[first][this._paramKey], this._data[second][this._paramKey])
+    }, 750)
 
-    
+    return intervalId;  
+
   }
 }

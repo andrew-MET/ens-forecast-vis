@@ -3,6 +3,9 @@ import { plume } from "./plume.js"
 import { stackedProb } from "./stackedProb.js"
 import { radialBands } from "./radialBands.js"
 
+// id for setInterval
+let intervalId
+
 // Set up parameter information
 const getParamInfo = (param) => {
     const params = {
@@ -151,6 +154,10 @@ const stackChart = (divID, data, param, thresh) => {
 // Function to set up a radial bands plot
 const radialBandChart = (divID, data, param, thresh) => {
 
+    if (intervalId) {
+        clearInterval(intervalId);
+    }
+
     let svg = d3.select("#" + param);
 
     if (svg.empty()) {
@@ -164,7 +171,7 @@ const radialBandChart = (divID, data, param, thresh) => {
 
     const currentParam = getParamInfo(param);
 
-    new radialBands(svg)
+    const radialPlot = new radialBands(svg)
         .data(data)
         .size(width, height)
         .paramKey(currentParam.name)
@@ -179,6 +186,8 @@ const radialBandChart = (divID, data, param, thresh) => {
         .render()
 
     d3.select("#" + divID).append(() => svg.node())
+
+    return radialPlot.intervalId
  
 }
 
@@ -306,7 +315,7 @@ const drawChart = (dataIn, param) => {
         ? plumeChart(param + "Container", data, param, thresh)
         : currentParam.type === "stackedProb"
             ? stackChart(param + "Container", data, param, thresh)
-            : radialBandChart(param + "Container", data, param, thresh)
+            : intervalId = radialBandChart(param + "Container", data, param, thresh)
 }
 
 
