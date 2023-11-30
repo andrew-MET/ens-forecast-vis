@@ -75,7 +75,7 @@ const getData = async () => {
 // Set up chart dimensions
 
 const width = 800;
-const height = 400;
+const height = 200;
 const margin = {
     top: 15,
     right: 40,
@@ -183,6 +183,8 @@ const radialBandChart = (divID, data, param, thresh) => {
         .threshold(thresh)
         .binSize(currentParam.binSize)
         .forceBinSize(currentParam.fixedBinSize)
+        .animDelay(250)
+        .animDuration(100)
         .render()
 
     d3.select("#" + divID).append(() => svg.node())

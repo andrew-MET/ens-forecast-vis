@@ -35,6 +35,8 @@ export class radialBands {
     this._threshold = null;
     this._binStep = 1;
     this._forceStep = false;
+    this._animDelay = 500;
+    this._animDuration = 250;
   }
 
   size(w, h) {
@@ -123,6 +125,16 @@ export class radialBands {
     const yLims = [l, h].sort();
     this._minY = yLims[0];
     this._maxY = yLims[1];
+    return this;
+  }
+
+  animDelay(d) {
+    this._animDelay = d;
+    return this;
+  }
+
+  animDuration(d) {
+    this._animDuration = d;
     return this;
   }
 
@@ -421,9 +433,9 @@ export class radialBands {
     const needlePath = [
       { x: radius * 0.05, y: radius * 0.1 },
       { x: radius * 0.05, y: -radius * 0.9 },
-      { x: radius * 0.075, y: -radius * 0.85 },
+      { x: radius * 0.1, y: -radius * 0.875 },
       { x: 0, y: -radius },
-      { x: -radius * 0.075, y: -radius * 0.85 },
+      { x: -radius * 0.1, y: -radius * 0.875 },
       { x: -radius * 0.05, y: -radius * 0.9 },
       { x: -radius * 0.05, y: radius * 0.1 },
       { x: -radius * 0.075, y: radius * 0.15 },
@@ -446,7 +458,7 @@ export class radialBands {
       )
       .attr("fill", (d) => this._bandColours[d.range]);
 
-    const drawNeedle = (angle1, angle2) => {
+    const drawNeedle = (angle1, angle2, delayTime, durTime) => {
       const needle = selectOrAppend("g", "needle", bounds)
       needle.transition()
       needle
@@ -459,22 +471,26 @@ export class radialBands {
         .attr("d", lineGenerator)
         .attr("transform", `rotate(${angle1})`)
         .attr("stroke", this._textColour)
-        .attr("fill", "none")
+        .attr("stroke-width", 2)
+        .attr("fill", "steelblue")
         .transition()
-        .delay(500)
-        .duration(250)
+        .delay(delayTime)
+        .duration(durTime)
         .attr("transform", `rotate(${angle2})`)
     }
 
-    let counter = 0;
-    let i = 0
+    drawNeedle(this._data[0][this._paramKey], this._data[1][this._paramKey], 0, 0)
+    let counter = 1;
     const intervalId = setInterval(() => {
       let first = counter;
       counter++;
       if (counter > (this._data.length - 1)) counter = 0;
       const second = counter;
-      drawNeedle(this._data[first][this._paramKey], this._data[second][this._paramKey])
-    }, 750)
+      drawNeedle(
+        this._data[first][this._paramKey], 
+        this._data[second][this._paramKey], 
+        this._animDelay, this._animDuration)
+    }, this._animDelay + this._animDuration)
 
     return intervalId;  
 
