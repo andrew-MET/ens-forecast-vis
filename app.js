@@ -57,7 +57,7 @@ const getParamInfo = (param) => {
             type: "plume"
         }
     }
-    return(params[param])
+    return (params[param])
 }
 
 
@@ -67,21 +67,29 @@ const getParamInfo = (param) => {
 const getData = async () => {
     let data = await d3.json("./data/meps_major_cities_2022081500_1600.json")
     // Set any negative precipitation values to 0
-    data = data.map(d => ("Pcp" in d) ? d.Pcp < 0 ? ({...d, Pcp: 0.0}) : d : d)
+    data = data.map(d => ("Pcp" in d) ? d.Pcp < 0 ? ({ ...d, Pcp: 0.0 }) : d : d)
     return data
 }
 
 
 // Set up chart dimensions
 
-const width = 800;
-const height = 200;
+let width = document.getElementById("tempContainer").clientWidth;
+let height = 200;
 const margin = {
     top: 15,
     right: 40,
     bottom: 20,
     left: 40
 };
+
+const resize = () => {
+    width = document.getElementById("tempContainer").clientWidth;
+    console.log(width);
+    refreshApp()
+}
+
+window.onresize = resize;
 
 // Function to set up a plume plot
 const plumeChart = (divID, data, param, thresh) => {
@@ -92,10 +100,11 @@ const plumeChart = (divID, data, param, thresh) => {
         svg = d3.create("svg")
             .attr("id", param)
             //.attr("viewBox", [0, 0, width, height])
-            .attr("width", width)
-            .attr("height", height)
             .attr("font-family", "sans-serif");
     }
+    svg
+        .attr("width", width)
+        .attr("height", height)
 
     const currentParam = getParamInfo(param);
 
@@ -114,7 +123,7 @@ const plumeChart = (divID, data, param, thresh) => {
         .render()
 
     d3.select("#" + divID).append(() => svg.node())
- 
+
 }
 
 // Function to set up a stacked probability plot
@@ -126,10 +135,11 @@ const stackChart = (divID, data, param, thresh) => {
         svg = d3.create("svg")
             .attr("id", param)
             //.attr("viewBox", [0, 0, width, height])
-            .attr("width", width)
-            .attr("height", height)
             .attr("font-family", "sans-serif");
     }
+    svg
+        .attr("width", width)
+        .attr("height", height)
 
     const currentParam = getParamInfo(param);
 
@@ -148,7 +158,7 @@ const stackChart = (divID, data, param, thresh) => {
         .render()
 
     d3.select("#" + divID).append(() => svg.node())
- 
+
 }
 
 // Function to set up a radial bands plot
@@ -164,10 +174,11 @@ const radialBandChart = (divID, data, param, thresh) => {
         svg = d3.create("svg")
             .attr("id", param)
             //.attr("viewBox", [0, 0, width, height])
-            .attr("width", width)
-            .attr("height", height)
             .attr("font-family", "sans-serif");
     }
+    svg
+        .attr("width", width)
+        .attr("height", height)
 
     const currentParam = getParamInfo(param);
 
@@ -190,38 +201,46 @@ const radialBandChart = (divID, data, param, thresh) => {
     d3.select("#" + divID).append(() => svg.node())
 
     return radialPlot.intervalId
- 
+
 }
 
 
 // Function to refersh charts and sliders (creates on first call)
 const refreshApp = async (dataIn) => {
+    console.log("refresh!")
     const params = ["temp", "windspeed", "hum", "winddir", "cloud", "precip"]
     const data = await dataIn;
 
     // station selector
-    const dropdown = document.createElement("select");
-    dropdown.setAttribute("id", "choose-station")
-    dropdown.addEventListener("change", (event) => {
+    const dropdown = document.getElementById("location-dropdown");
+    dropdown.addEventListener("hide.bs.dropdown", (event) => {
+        stationName = event.clickEvent.target.attributes[1].value;
         for (const prm of params) {
-            updateThreshSlider(data, prm);
-            drawChart(data, prm);
+            updateThreshSlider(filterToLocation(data, stationName), prm);
+            drawChart(filterToLocation(data, stationName), prm);
         }
     });
     const stations = [...new Set(data.map(d => d.name))].sort();
+    const stationsList = document.getElementById("stations-list");
     for (let i = 0; i < stations.length; i++) {
-        let opt = document.createElement("option");
-        opt.text = stations[i];
-        opt.value = stations[i];
-        dropdown.options.add(opt);
+        let opt = stations[i];
+        let li = document.createElement("li");
+        let link = document.createElement("a");
+        let text = document.createTextNode(opt);
+        link.appendChild(text);
+        link.href = "#";
+        link.setAttribute("value", opt);
+        link.setAttribute("class", "dropdown-item")
+        li.appendChild(link);
+        stationsList.appendChild(li);
     }
     dropdown.selectedIndex = 0;
-    const dropdownLabel = document.createElement("label");
-    dropdownLabel.setAttribute("for", "choose-station")
-    dropdownLabel.innerHTML = "<strong>Location: </strong>";
-    const locContainer = document.getElementById("location-dropdown");
-    locContainer.appendChild(dropdownLabel);
-    locContainer.appendChild(dropdown);
+    // const dropdownLabel = document.createElement("label");
+    // dropdownLabel.setAttribute("for", "choose-station")
+    // dropdownLabel.innerHTML = "<strong>Location: </strong>";
+    // const locContainer = document.getElementById("location-dropdown");
+    // locContainer.appendChild(dropdownLabel);
+    // locContainer.appendChild(dropdown);
 
     // Threshold Sliders
     for (const prm of params) {
@@ -230,16 +249,27 @@ const refreshApp = async (dataIn) => {
 
     // Draw charts for the first time
     for (const prm of params) {
-        drawChart(data, prm);
+        d3.select("#" + prm + "svg")
+            .attr("width", width)
+            .attr("height", height);
+        drawChart(data, prm, stationName);
     }
 }
 
 const data = getData();
+let stationName;
 
 refreshApp(data);
 
-const filterToLocation = data => {
-    const loc = document.getElementById("choose-station").value
+const filterToLocation = (data, loc) => {
+    const h1Name = document.getElementById("station-name");
+    //console.log(typeof loc === "undefined")
+    if (typeof loc === "undefined") {
+        const firstStation = [...new Set(data.map(d => d.name))].sort()[0];
+        h1Name.innerHTML = firstStation;
+        return data.filter(d => d.name === firstStation);
+    }
+    h1Name.innerHTML = loc;
     return data.filter(d => d.name === loc)
 }
 
@@ -255,19 +285,19 @@ const makeThreshSlider = (data, param) => {
     slider.setAttribute("max", n * Math.ceil(threshRange[1] / n));
     slider.setAttribute("value", n * Math.floor(threshRange[0] / n));
     slider.setAttribute("step", n);
-    slider.addEventListener("input", event => drawChart(data, param));
+    slider.addEventListener("input", event => drawChart(data, param, stationName));
     const sliderLabel = document.createElement("label");
     sliderLabel.setAttribute("for", param + "-threshold");
     sliderLabel.innerHTML = "<strong>   Threshold: </strong>";
     const threshContainer = document.getElementById("thresholds-" + param);
     threshContainer.appendChild(sliderLabel);
-    threshContainer.appendChild(slider);   
+    threshContainer.appendChild(slider);
 
     if (param === "winddir") {
         const dropdown = document.createElement("select");
         dropdown.setAttribute("id", "choose-time")
         dropdown.addEventListener("change", (event) => {
-            drawChart(data, param);
+            drawChart(data, param, stationName);
         });
         const times = [...new Set(data.map(d => d.valid_dttm))].sort();
         for (let i = 0; i < times.length; i++) {
@@ -279,14 +309,14 @@ const makeThreshSlider = (data, param) => {
         dropdown.selectedIndex = 0;
         const dropdownLabel = document.createElement("label");
         dropdownLabel.setAttribute("for", "choose-time")
-        dropdownLabel.innerHTML = "<strong>    Time: </strong>"; 
+        dropdownLabel.innerHTML = "<strong>    Time: </strong>";
         threshContainer.appendChild(dropdownLabel);
-        threshContainer.appendChild(dropdown);          
+        threshContainer.appendChild(dropdown);
     }
 }
 
-const updateThreshSlider = (dataIn, param) => {
-    const data = filterToLocation(dataIn);
+const updateThreshSlider = (dataIn, param, loc) => {
+    const data = filterToLocation(dataIn, loc);
     const currentParam = getParamInfo(param)
     const threshRange = d3.extent(data, d => d[currentParam.name]);
     const n = currentParam.binSize;
@@ -296,9 +326,9 @@ const updateThreshSlider = (dataIn, param) => {
     slider.setAttribute("value", n * Math.floor(threshRange[0] / n));
 }
 
-const drawChart = (dataIn, param) => {
+const drawChart = (dataIn, param, loc) => {
 
-    let data = filterToLocation(dataIn);
+    let data = filterToLocation(dataIn, loc);
 
     // If wind direction, get the time
     if (param === "winddir") {

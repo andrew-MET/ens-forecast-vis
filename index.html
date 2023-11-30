@@ -1,40 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ensemble Forecast Visualizations</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">    
-    <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">    
-   <style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <style>
         body {
             font-family: "Lato", sans-serif;
         }
     </style>
 </head>
+
 <body>
-    <div id= "location-dropdown"></div>
-    <h2>2m Temperature</h1>
-    <div id = "thresholds-temp"></div>
-    <div id= "tempContainer"></div>
-    <h2>10m Wind speed</h1>
-    <div id = "thresholds-windspeed"></div>
-    <div id = "windspeedContainer"></div>
-    <h2>2m Relative humidity</h1>
-    <div id = "thresholds-hum"></div>
-    <div id = "humContainer"></div>
-    <h2>10m wind direction</h1>
-    <div id = "thresholds-winddir"></div>
-    <div id = "winddirContainer"></div>
-    <h2>Cloud cover</h1>
-    <div id = "thresholds-cloud"></div>
-    <div id = "cloudContainer"></div>
-    <h2>Precipitation</h1>
-    <div id = "thresholds-precip"></div>
-    <div id = "precipContainer"></div>
-    
-    <script src="app.js" type = "module"></script>
+
+    <!--Navbar-->
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Ensemble Visualizations</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" id="location-dropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Location
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="location-dropdown" id="stations-list">                         
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" id="viztype-dropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Visualization Type
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="location-dropdown" id="stations-list"> 
+                            <li><a class="dropdown-item" href="#">Plume with hover interactions</a></li>                        
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <h1 id="station-name"></h1>
+        <div class="row">
+            <div class="col">
+                <div class="row">
+                    <div class="col"><h4>2m Temperature</h4></div>
+                    <div class="col" id="thresholds-temp"></div>
+                </div>
+                <div id="tempContainer"></div>
+            </div>
+            <div class="col">
+                <div class="row">
+                    <div class="col"><h4>2m Relative humidity</h4></div>
+                    <div class="col" id="thresholds-hum"></div>
+                </div>
+                <div id="humContainer"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="row">
+                    <div class="col"><h4>10m Wind speed</h4></div>
+                    <div class="col" id="thresholds-windspeed"></div>
+                </div>
+                <div id="windspeedContainer"></div>
+            </div>
+            <div class="col">
+                <div class="row">
+                    <div class="col"><h4>10m wind direction</h4></div>
+                    <div class="col" id="thresholds-winddir"></div>
+                </div>
+                <div id="winddirContainer"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="row">
+                    <div class="col"><h4>Cloud cover</h4></div>
+                    <div class="col" id="thresholds-cloud"></div>
+                </div>
+                <div id="cloudContainer"></div>
+            </div>
+            <div class="col">
+                <div class="row">
+                    <div class="col"><h4>Precipitation</h4></div>
+                    <div class="col" id="thresholds-precip"></div>
+                </div>
+                <div id="precipContainer"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js" type="module"></script>
 </body>
+
 </html>
