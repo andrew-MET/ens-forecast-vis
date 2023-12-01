@@ -55,56 +55,76 @@
             </div>
         </div>
     </nav>
-    <div class="container">
+    <div class="container" id="main-container">
         <h1 id="station-name"></h1>
         <div class="row">
-            <div class="col">
-                <div class="row">
-                    <div class="col"><h4>2m Temperature</h4></div>
-                    <div class="col" id="thresholds-temp"></div>
+            <div class="col d-flex justify-content-center"> 
+                <div class="card">
+                    <h5 class="card-header">2m Temperature</h5>
+                    <div class="card-body">
+                        <div id="thresholds-temp"></div>
+                        <div id="tempContainer"></div>
+                    </div>
                 </div>
-                <div id="tempContainer"></div>
-            </div>
-            <div class="col">
-                <div class="row">
-                    <div class="col"><h4>2m Relative humidity</h4></div>
-                    <div class="col" id="thresholds-hum"></div>
-                </div>
-                <div id="humContainer"></div>
             </div>
         </div>
         <div class="row">
-            <div class="col">
-                <div class="row">
-                    <div class="col"><h4>10m Wind speed</h4></div>
-                    <div class="col" id="thresholds-windspeed"></div>
+            <div class="col d-flex justify-content-center"> 
+                <div class="card">
+                    <h5 class="card-header">2m Relative humidity</h5>
+                    <div class="card-body">
+                        <div id="thresholds-hum"></div>
+                        <div id="humContainer"></div>
+                    </div>
                 </div>
-                <div id="windspeedContainer"></div>
-            </div>
-            <div class="col">
-                <div class="row">
-                    <div class="col"><h4>10m wind direction</h4></div>
-                    <div class="col" id="thresholds-winddir"></div>
-                </div>
-                <div id="winddirContainer"></div>
             </div>
         </div>
         <div class="row">
-            <div class="col">
-                <div class="row">
-                    <div class="col"><h4>Cloud cover</h4></div>
-                    <div class="col" id="thresholds-cloud"></div>
+            <div class="col d-flex justify-content-center"> 
+                <div class="card">
+                    <h5 class="card-header">10m Wind speed</h5>
+                    <div class="card-body">
+                        <div id="thresholds-windspeed"></div>
+                        <div id="windspeedContainer"></div>
+                    </div>
                 </div>
-                <div id="cloudContainer"></div>
-            </div>
-            <div class="col">
-                <div class="row">
-                    <div class="col"><h4>Precipitation</h4></div>
-                    <div class="col" id="thresholds-precip"></div>
-                </div>
-                <div id="precipContainer"></div>
             </div>
         </div>
+        <div class="row">
+            <div class="col d-flex justify-content-center"> 
+                <div class="card">
+                    <h5 class="card-header">10m Wind direction</h5>
+                    <div class="card-body">
+                        <div id="thresholds-winddir"></div>
+                        <div id="winddirContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col d-flex justify-content-center"> 
+                <div class="card">
+                    <h5 class="card-header">Cloud cover</h5>
+                    <div class="card-body">
+                        <div id="thresholds-cloud"></div>
+                        <div id="cloudContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col d-flex justify-content-center"> 
+                <div class="card">
+                    <h5 class="card-header">1h Precipitation</h5>
+                    <div class="card-body">
+                        <div id="thresholds-precip"></div>
+                        <div id="precipContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
 
     </div>
 

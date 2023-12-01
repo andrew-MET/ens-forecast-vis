@@ -74,7 +74,7 @@ const getData = async () => {
 
 // Set up chart dimensions
 
-let width = document.getElementById("tempContainer").clientWidth;
+let width = Math.min(document.getElementById("main-container").clientWidth - 50, 1300);
 let height = 200;
 const margin = {
     top: 15,
@@ -84,9 +84,9 @@ const margin = {
 };
 
 const resize = () => {
-    width = document.getElementById("tempContainer").clientWidth;
+    width = Math.min(document.getElementById("main-container").clientWidth - 50, 1300);
     console.log(width);
-    refreshApp()
+    refreshApp(dataJSON)
 }
 
 window.onresize = resize;
@@ -206,48 +206,42 @@ const radialBandChart = (divID, data, param, thresh) => {
 
 
 // Function to refersh charts and sliders (creates on first call)
-const refreshApp = async (dataIn) => {
-    console.log("refresh!")
+const refreshApp = async (dataIn, firstTime = false) => {
     const params = ["temp", "windspeed", "hum", "winddir", "cloud", "precip"]
     const data = await dataIn;
 
     // station selector
-    const dropdown = document.getElementById("location-dropdown");
-    dropdown.addEventListener("hide.bs.dropdown", (event) => {
-        stationName = event.clickEvent.target.attributes[1].value;
-        for (const prm of params) {
-            updateThreshSlider(filterToLocation(data, stationName), prm);
-            drawChart(filterToLocation(data, stationName), prm);
+    if (firstTime) {
+        const dropdown = document.getElementById("location-dropdown");
+        dropdown.addEventListener("hide.bs.dropdown", (event) => {
+            stationName = event.clickEvent.target.attributes[1].value;
+            for (const prm of params) {
+                updateThreshSlider(filterToLocation(data, stationName), prm);
+                drawChart(filterToLocation(data, stationName), prm);
+            }
+        });
+        const stations = [...new Set(data.map(d => d.name))].sort();
+        const stationsList = document.getElementById("stations-list");
+        for (let i = 0; i < stations.length; i++) {
+            let opt = stations[i];
+            let li = document.createElement("li");
+            let link = document.createElement("a");
+            let text = document.createTextNode(opt);
+            link.appendChild(text);
+            link.href = "#";
+            link.setAttribute("value", opt);
+            link.setAttribute("class", "dropdown-item")
+            li.appendChild(link);
+            stationsList.appendChild(li);
         }
-    });
-    const stations = [...new Set(data.map(d => d.name))].sort();
-    const stationsList = document.getElementById("stations-list");
-    for (let i = 0; i < stations.length; i++) {
-        let opt = stations[i];
-        let li = document.createElement("li");
-        let link = document.createElement("a");
-        let text = document.createTextNode(opt);
-        link.appendChild(text);
-        link.href = "#";
-        link.setAttribute("value", opt);
-        link.setAttribute("class", "dropdown-item")
-        li.appendChild(link);
-        stationsList.appendChild(li);
-    }
-    dropdown.selectedIndex = 0;
-    // const dropdownLabel = document.createElement("label");
-    // dropdownLabel.setAttribute("for", "choose-station")
-    // dropdownLabel.innerHTML = "<strong>Location: </strong>";
-    // const locContainer = document.getElementById("location-dropdown");
-    // locContainer.appendChild(dropdownLabel);
-    // locContainer.appendChild(dropdown);
-
-    // Threshold Sliders
-    for (const prm of params) {
-        makeThreshSlider(data, prm);
+     
+        // Threshold Sliders
+        for (const prm of params) {
+            makeThreshSlider(data, prm);
+        }
     }
 
-    // Draw charts for the first time
+    // Draw charts
     for (const prm of params) {
         d3.select("#" + prm + "svg")
             .attr("width", width)
@@ -256,21 +250,21 @@ const refreshApp = async (dataIn) => {
     }
 }
 
-const data = getData();
+const dataJSON = getData();
 let stationName;
 
-refreshApp(data);
+refreshApp(dataJSON, true);
 
 const filterToLocation = (data, loc) => {
     const h1Name = document.getElementById("station-name");
-    //console.log(typeof loc === "undefined")
     if (typeof loc === "undefined") {
         const firstStation = [...new Set(data.map(d => d.name))].sort()[0];
         h1Name.innerHTML = firstStation;
         return data.filter(d => d.name === firstStation);
+    } else {
+        h1Name.innerHTML = loc;
+        return data.filter(d => d.name === loc)
     }
-    h1Name.innerHTML = loc;
-    return data.filter(d => d.name === loc)
 }
 
 const makeThreshSlider = (data, param) => {
