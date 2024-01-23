@@ -31,6 +31,7 @@ export class plume {
     this._threshold = null;
     this._binStep = 1;
     this._forceStep = false;
+    this._tooltipId = null;
   }
 
   size(w, h) {
@@ -107,6 +108,11 @@ export class plume {
     const yLims = [l, h].sort();
     this._minY = yLims[0];
     this._maxY = yLims[1];
+    return this;
+  }
+
+  tooltipId(t) {
+    this._tooltipId = t;
     return this;
   }
 
@@ -308,18 +314,7 @@ export class plume {
     const validTimes = d3.groups(this._data, d => d[this._validTimeKey])
     const barWidths = x(this._timeParser(validTimes[1][0])) - x(this._timeParser(validTimes[0][0]))
 
-    const tooltip = selectOrAppend("div", "d3-tooltip", d3.select("body"))
-      .style('position', 'absolute')
-      .style('z-index', '10')
-      .style('opacity', 0)
-      .style('padding', '10px')
-      .style('background', '#yellow')
-      .style('border-radius', '30px')
-      .style('color', '#333')
-      .style("border-style", "solid")
-      .style("border-color", "#C33")
-      .style("font-family", "sans-serif")
-      .text('a simple tooltip');
+    const tooltip = d3.select("#" + this._tooltipId);
 
     const tooltipReveal = (event, d) => {
       tooltipBars.attr("opacity", b => b[0] === d[0] ? 0.5 : 0)
@@ -368,9 +363,9 @@ export class plume {
       .attr("y", 0)
       .attr("width", barWidths)
       .attr("height", this._height - this._margins.top - this._margins.bottom)
-      .on("mouseenter", tooltipReveal)
-      .on("mouseleave", tooltipHide)
-      .on("mousemove", tooltipMove)
+      .on("mouseenter", this._tooltipId ? tooltipReveal : null)
+      .on("mouseleave", this._tooltipId ? tooltipHide : null)
+      .on("mousemove", this._tooltipId ? tooltipMove : null)
 
     if (this._threshold) {
       d3.select("#threshLine").remove()

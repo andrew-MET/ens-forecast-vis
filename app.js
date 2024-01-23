@@ -85,11 +85,33 @@ const margin = {
 
 const resize = () => {
     width = Math.min(document.getElementById("main-container").clientWidth - 50, 1300);
-    console.log(width);
     refreshApp(dataJSON)
 }
 
 window.onresize = resize;
+
+// Create tooltip
+
+const selectOrAppend = (elementType, className, parent) => {
+  const selection = parent.select("." + className);
+  if (!selection.empty()) return selection;
+  return parent.append(elementType).attr("class", className);
+};
+
+const tooltip = selectOrAppend("div", "d3-tooltip", d3.select("body"))
+.attr("id", "hoverTooltip")
+.style('position', 'absolute')
+.style('z-index', '10')
+.style('opacity', 0)
+.style('padding', '10px')
+.style('background', 'white')
+.style('border-radius', '10px')
+.style('color', '#333')
+.style("border-style", "solid")
+.style("border-color", "#C33")
+.style("font-family", "sans-serif")
+.text('a simple tooltip');
+
 
 // Function to set up a plume plot
 const plumeChart = (divID, data, param, thresh) => {
@@ -120,6 +142,7 @@ const plumeChart = (divID, data, param, thresh) => {
         .threshold(thresh)
         .binSize(currentParam.binSize)
         .forceBinSize(currentParam.fixedBinSize)
+        .tooltipId("hoverTooltip")
         .render()
 
     d3.select("#" + divID).append(() => svg.node())
@@ -155,6 +178,7 @@ const stackChart = (divID, data, param, thresh) => {
         .threshold(thresh)
         .binSize(currentParam.binSize)
         .forceBinSize(currentParam.fixedBinSize)
+        .tooltipId("hoverTooltip")
         .render()
 
     d3.select("#" + divID).append(() => svg.node())
